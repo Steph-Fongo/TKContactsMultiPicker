@@ -16,6 +16,8 @@
     NSString *email;
     NSString *tel;
     UIImage *thumbnail;
+    NSString *lastName;
+    NSString *firstName;
 }
 
 @property NSInteger sectionNumber;
@@ -25,5 +27,10 @@
 @property (nonatomic, retain) NSString *email;
 @property (nonatomic, retain) NSString *tel;
 @property (nonatomic, retain) UIImage *thumbnail;
+@property (nonatomic, retain) NSString *lastName;
+@property (nonatomic, retain) NSString *firstName;
+
+- (NSString*)sorterFirstName;
+- (NSString*)sorterLastName;
 
 @end

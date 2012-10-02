@@ -82,6 +82,8 @@
         addressBook.name = nameString;
         addressBook.recordID = (int)ABRecordGetRecordID(person);;
         addressBook.rowSelected = NO;
+        addressBook.lastName = lastNameString;
+        addressBook.firstName = (NSString*)abName;
         
         ABPropertyID multiProperties[] = {
             kABPersonPhoneProperty,
@@ -129,9 +131,10 @@
     
     // Sort data
     UILocalizedIndexedCollation *theCollation = [UILocalizedIndexedCollation currentCollation];
+    SEL sorter = ABPersonGetSortOrdering() == kABPersonSortByFirstName ? NSSelectorFromString(@"sorterFirstName") : NSSelectorFromString(@"sorterLastName");
     for (TKAddressBook *addressBook in addressBookTemp) {
         NSInteger sect = [theCollation sectionForObject:addressBook
-                                collationStringSelector:@selector(name)];
+                                collationStringSelector:sorter];
         addressBook.sectionNumber = sect;
     }
     
@@ -147,7 +150,7 @@
     }
     
     for (NSMutableArray *sectionArray in sectionArrays) {
-        NSArray *sortedSection = [theCollation sortedArrayFromArray:sectionArray collationStringSelector:@selector(name)];
+        NSArray *sortedSection = [theCollation sortedArrayFromArray:sectionArray collationStringSelector:sorter];
         [_listContent addObject:sortedSection];
     }
     [self.tableView reloadData];

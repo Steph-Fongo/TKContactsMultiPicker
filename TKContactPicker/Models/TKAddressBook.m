@@ -9,7 +9,7 @@
 #import "TKAddressBook.h"
 
 @implementation TKAddressBook
-@synthesize name, email, tel, thumbnail, recordID, sectionNumber, rowSelected;
+@synthesize name, email, tel, thumbnail, recordID, sectionNumber, rowSelected, lastName, firstName;
 
 - (void)dealloc
 {
@@ -17,8 +17,36 @@
     [email release];
     [tel release];
     [thumbnail release];
-    
+    [lastName release];
+    [firstName release];
+   
     [super dealloc];
+}
+
+- (NSString*)sorterFirstName {
+   if (nil != firstName && ![firstName isEqualToString:@""]) {
+      return firstName;
+   }
+   if (nil != lastName && ![lastName isEqualToString:@""]) {
+      return lastName;
+   }
+   if (nil != name && ![name isEqualToString:@""]) {
+      return name;
+   }
+   return nil;
+}
+
+- (NSString*)sorterLastName {
+   if (nil != lastName && ![lastName isEqualToString:@""]) {
+      return lastName;
+   }
+   if (nil != firstName && ![firstName isEqualToString:@""]) {
+      return firstName;
+   }
+   if (nil != name && ![name isEqualToString:@""]) {
+      return name;
+   }
+   return nil;
 }
 
 @end
