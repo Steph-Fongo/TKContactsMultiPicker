@@ -39,91 +39,93 @@
     
     for (NSInteger i = 0; i < nPeople; i++)
     {
-        TKAddressBook *addressBook = [[TKAddressBook alloc] init];
         ABRecordRef person = CFArrayGetValueAtIndex(allPeople, i);
-        CFStringRef abName = ABRecordCopyValue(person, kABPersonFirstNameProperty);
-        CFStringRef abLastName = ABRecordCopyValue(person, kABPersonLastNameProperty);
-        CFStringRef abFullName = ABRecordCopyCompositeName(person);
-        
-        /*
-         Save thumbnail image - performance decreasing
-         UIImage *personImage = nil;
-         if (person != nil && ABPersonHasImageData(person)) {
-         if ( &ABPersonCopyImageDataWithFormat != nil ) {
-         // iOS >= 4.1
-         CFDataRef contactThumbnailData = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-         personImage = [[UIImage imageWithData:(NSData*)contactThumbnailData] thumbnailImage:CGSizeMake(44, 44)];
-         CFRelease(contactThumbnailData);
-         CFDataRef contactImageData = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatOriginalSize);
-         CFRelease(contactImageData);
-         
-         } else {
-         // iOS < 4.1
-         CFDataRef contactImageData = ABPersonCopyImageData(person);
-         personImage = [[UIImage imageWithData:(NSData*)contactImageData] thumbnailImage:CGSizeMake(44, 44)];
-         CFRelease(contactImageData);
-         }
-         }
-         [addressBook setThumbnail:personImage];
-         */
-        
-        NSString *nameString = (NSString *)abName;
-        NSString *lastNameString = (NSString *)abLastName;
-        
-        if ((id)abFullName != nil) {
-            nameString = (NSString *)abFullName;
-        } else {
-            if ((id)abLastName != nil)
-            {
-                nameString = [NSString stringWithFormat:@"%@ %@", nameString, lastNameString];
-            }
-        }
-        
-        addressBook.name = nameString;
-        addressBook.recordID = (int)ABRecordGetRecordID(person);;
-        addressBook.rowSelected = NO;
-        addressBook.lastName = lastNameString;
-        addressBook.firstName = (NSString*)abName;
-        
-        ABPropertyID multiProperties[] = {
-            kABPersonPhoneProperty,
-            kABPersonEmailProperty
-        };
-        NSInteger multiPropertiesTotal = sizeof(multiProperties) / sizeof(ABPropertyID);
-        for (NSInteger j = 0; j < multiPropertiesTotal; j++) {
-            ABPropertyID property = multiProperties[j];
-            ABMultiValueRef valuesRef = ABRecordCopyValue(person, property);
-            NSInteger valuesCount = 0;
-            if (valuesRef != nil) valuesCount = ABMultiValueGetCount(valuesRef);
+        if (nil != person) {
+           TKAddressBook *addressBook = [[TKAddressBook alloc] init];
+           CFStringRef abName = ABRecordCopyValue(person, kABPersonFirstNameProperty);
+           CFStringRef abLastName = ABRecordCopyValue(person, kABPersonLastNameProperty);
+           CFStringRef abFullName = ABRecordCopyCompositeName(person);
+           
+           /*
+            Save thumbnail image - performance decreasing
+            UIImage *personImage = nil;
+            if (person != nil && ABPersonHasImageData(person)) {
+            if ( &ABPersonCopyImageDataWithFormat != nil ) {
+            // iOS >= 4.1
+            CFDataRef contactThumbnailData = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+            personImage = [[UIImage imageWithData:(NSData*)contactThumbnailData] thumbnailImage:CGSizeMake(44, 44)];
+            CFRelease(contactThumbnailData);
+            CFDataRef contactImageData = ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatOriginalSize);
+            CFRelease(contactImageData);
             
-            if (valuesCount == 0) {
-                CFRelease(valuesRef);
-                continue;
+            } else {
+            // iOS < 4.1
+            CFDataRef contactImageData = ABPersonCopyImageData(person);
+            personImage = [[UIImage imageWithData:(NSData*)contactImageData] thumbnailImage:CGSizeMake(44, 44)];
+            CFRelease(contactImageData);
             }
-            
-            for (NSInteger k = 0; k < valuesCount; k++) {
-                CFStringRef value = ABMultiValueCopyValueAtIndex(valuesRef, k);
-                switch (j) {
-                    case 0: {// Phone number
-                        addressBook.tel = [(NSString*)value telephoneWithReformat];
-                        break;
-                    }
-                    case 1: {// Email
-                        addressBook.email = (NSString*)value;
-                        break;
-                    }
-                }
-                CFRelease(value);
             }
-            CFRelease(valuesRef);
+            [addressBook setThumbnail:personImage];
+            */
+           
+           NSString *nameString = (NSString *)abName;
+           NSString *lastNameString = (NSString *)abLastName;
+           
+           if ((id)abFullName != nil) {
+               nameString = (NSString *)abFullName;
+           } else {
+               if ((id)abLastName != nil)
+               {
+                   nameString = [NSString stringWithFormat:@"%@ %@", nameString, lastNameString];
+               }
+           }
+           
+           addressBook.name = nameString;
+           addressBook.recordID = (int)ABRecordGetRecordID(person);;
+           addressBook.rowSelected = NO;
+           addressBook.lastName = lastNameString;
+           addressBook.firstName = (NSString*)abName;
+           
+           ABPropertyID multiProperties[] = {
+               kABPersonPhoneProperty,
+               kABPersonEmailProperty
+           };
+           NSInteger multiPropertiesTotal = sizeof(multiProperties) / sizeof(ABPropertyID);
+           for (NSInteger j = 0; j < multiPropertiesTotal; j++) {
+               ABPropertyID property = multiProperties[j];
+               ABMultiValueRef valuesRef = ABRecordCopyValue(person, property);
+               NSInteger valuesCount = 0;
+               if (valuesRef != nil) valuesCount = ABMultiValueGetCount(valuesRef);
+               
+               if (valuesCount == 0) {
+                   CFRelease(valuesRef);
+                   continue;
+               }
+               
+               for (NSInteger k = 0; k < valuesCount; k++) {
+                   CFStringRef value = ABMultiValueCopyValueAtIndex(valuesRef, k);
+                   switch (j) {
+                       case 0: {// Phone number
+                           addressBook.tel = [(NSString*)value telephoneWithReformat];
+                           break;
+                       }
+                       case 1: {// Email
+                           addressBook.email = (NSString*)value;
+                           break;
+                       }
+                   }
+                   CFRelease(value);
+               }
+               CFRelease(valuesRef);
+           }
+           
+           [addressBookTemp addObject:addressBook];
+           [addressBook release];
+           
+           if (abName) CFRelease(abName);
+           if (abLastName) CFRelease(abLastName);
+           if (abFullName) CFRelease(abFullName);
         }
-        
-        [addressBookTemp addObject:addressBook];
-        [addressBook release];
-        
-        if (abName) CFRelease(abName);
-        if (abLastName) CFRelease(abLastName);
-        if (abFullName) CFRelease(abFullName);
     }
     
     CFRelease(allPeople);
